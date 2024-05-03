@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Club Membership</title>
+    <!-- Importing Vue.js library -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+
+        .selected {
+            text-decoration: line-through ;
+            font-style: italic;
+            color: gray;
+        }
+
+        input {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 5px 5px 0px;
+            box-sizing: border-box;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div id="app">
+    <h1>Student Club Roster</h1>
+
+    <h2>Add Students</h2>
+
+    <label for="student-name">Student Name</label>
+    <!-- Binding newStudentName to input -->
+    <input id="student-name" name="student-name" v-model="newStudentName">
+
+    <br>
+
+    <label for="student-id">Student ID</label>
+    <!-- Binding newStudentId to input -->
+    <input id="student-id" name="student-id" v-model="newStudentId">
+
+    <br>
+
+    <label for="student-gpa">Student GPA</label>
+    <!-- Binding newStudentGpa to input -->
+    <input id="student-gpa" name="student-gpa" type="number" v-model="newStudentGpa">
+
+    <br>
+
+    <!-- Click event handler to add new student -->
+    <button id="add-student" @click="addNewStudent">Add Student</button>
+
+    <h2>Student List</h2>
+
+    <p>There is/are
+        <span id="student-count">{{ studentCount }}</span>
+        student(s) in the club.</p>
+
+
+    <ul id="student-list">
+        <!-- Rendering table rows with v-for -->
+        <li v-for="student in studentList" v-on:click="selectOrUnselectStudent(student)" v-bind:class="{ selected: student.selected }">
+            <!-- Displaying the student's data more neatly -->
+            <!-- for example "Beyonce Knowles, id: aa1234bb, GPA 3.8" -->
+            {{ student.name }}, id: {{ student.id }}, GPA {{ student.gpa }}
+        </li>
+    </ul>
+
+    <!-- Add a v-on to call removeSelectedStudents -->
+    <button id="remove-selected-students" @click="removeSelectedStudents">Remove selected students</button>
+
+</div>  <!-- end of div#app -->
+
+<script>
+
+    const { createApp, ref, computed } = Vue;
+
+    createApp({
+        setup() {
+
+            // Create refs for student data
+            const newStudentName = ref('');
+            const newStudentId = ref('');
+            const newStudentGpa = ref('');
+
+            // Use ref for form validation errors
+            const errors = ref([]);
+
+            // Create an array to store student objects
+            const studentList = ref([]);
+
+            // Computed property to calculate the number of students
+            const studentCount = computed(() => studentList.value.length);
+
+            // Function to add a new student
+            const addNewStudent = () => {
+                // Clear previous errors
+                errors.value = [];
+
+                // Validate form inputs
+                if (!newStudentName.value.trim()) {
+                    errors.value.push('Please enter a student name.');
+                }
+                if (!newStudentId.value.trim()) {
+                    errors.value.push('Please enter a student ID.');
+                }
+                const gpa = parseFloat(newStudentGpa.value);
+                if (isNaN(gpa) || gpa < 0 || gpa > 4) {
+                    errors.value.push('Please enter a valid GPA between 0 and 4.');
+                }
+                // If there are errors, display an alert
+                if (errors.value.length > 0) {
+                    alert(errors.value.join('\n'));
+                } else {
+                    // Create a new student object
+                    const newStudent = {
+                        name: newStudentName.value,
+                        id: newStudentId.value,
+                        gpa: parseFloat(newStudentGpa.value),
+                        selected: false
+                    };
+
+                    // Add the new student to the list
+                    studentList.value.push(newStudent);
+
+                    // Clear form inputs
+                    newStudentName.value = '';
+                    newStudentId.value = '';
+                    newStudentGpa.value = '';
+                }
+            };
+
+            // Function to remove selected students
+            const removeSelectedStudents = () => {
+                studentList.value = studentList.value.filter(student => !student.selected);
+            };
+
+            // Function to toggle the selected status of a student
+            const selectOrUnselectStudent = (student) => {
+                student.selected = !student.selected;
+            };
+
+            return {
+                newStudentName,
+                newStudentId,
+                newStudentGpa,
+                studentList,
+                studentCount,
+                addNewStudent,
+                removeSelectedStudents,
+                selectOrUnselectStudent
+            };
+        }
+    }).mount('#app');
+
+</script>
+
+</body>
+</html>
